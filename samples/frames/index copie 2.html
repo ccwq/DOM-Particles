@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+		<title>Canon</title>
+		<meta name="description" content="" />
+		<meta name="author" content="Minican" />
+		
+		<style>
+		html,body {margin:0;padding:0;}
+			#stage {
+				width: 640px;
+				height: 480px;
+				border: 1px solid #ccc;
+				position: relative;
+			}
+			.red {
+				width: 5px;
+				height: 5px;
+				background: red;
+				position: absolute;
+				z-index: 999;
+				border-radius: 50%;
+			}
+			.blue {
+				width: 5px;
+				height: 5px;
+				background: blue;
+				position: absolute;
+				z-index: 999;
+				border-radius: 50%;
+			}
+		</style>
+		
+		
+		<script type="text/javascript">
+		
+		var randomRange = function (min, max) {
+			return Math.random() * (max - min) + min;
+			//je gÃ©nÃ¨re deux nombres, un minimum et un maximum 
+		}
+	
+		var logs = {
+			create : function(){
+				logs.el = document.createElement("div");
+			},
+			style : function(){
+				logs.el.style.position = "fixed";
+				logs.el.style.bottom = 0;
+				logs.el.style.right = 0;
+				logs.el.style.width = 200+"px";
+				logs.el.style.backgroundColor = "rgba(50,50,50,.5)";
+				logs.el.style.padding = 10+"px";
+				logs.el.style.fontFamily = "arial";
+				logs.el.style.color = "white";
+				logs.el.style.lineHeight = 24+"px";
+			},
+			append : function(name){
+				logs.create();
+				logs.el.className = name ? name : "log";
+				logs.style();
+				document.body.appendChild(logs.el);
+			},
+			update: function(myArray){
+				if(myArray instanceof Array){
+					console.log("felicitation");
+					for (var i=0; i < myArray.length; i++) {
+					 	logs.el.innerHTML +=  myArray[i] + "<br/>"; 
+					};
+				}
+			}
+		}
+		
+		var stage = {
+			fps : 1000/24,
+			width : 640,
+			height : 480,
+			interval : null
+		}
+		
+		stage.update = function(){};
+		stage.play = function(){
+			stage.interval = setInterval(stage.update, stage.fps);
+		}
+		stage.pause = function(){
+			clearInterval(stage.interval);
+		}
+		
+		var system = {
+			numberOfParticles : 30,
+			allParticles : [],
+			centerX : stage.width/2,
+			centerY : stage.height/2,
+			
+			create : function(cls){
+				for (var i=0; i < system.numberOfParticles; i++) {
+					var id = i;
+					var point = new Particle;
+						point.append(cls);
+					system.allParticles.push(point);
+				};
+			}
+		}
+		
+		var Particle = function(){
+			
+			this.id = 0;
+			this.maxSpeed = 10;
+			
+			this.reset = function(){
+				this.width = 4;
+				this.height = 4;
+				this.x = system.centerX;
+				this.y = system.centerY;
+				
+				this.speeX = randomRange(-this.maxSpeed, this.maxSpeed);
+				this.speeY = randomRange(-this.maxSpeed, this.maxSpeed);
+				
+			}
+			
+			this.createElement = function(){
+				this.element = document.createElement("div");
+			}
+			
+			this.append = function(cls){
+				this.createElement();
+				this.element.className = cls;
+				stage.root.appendChild(this.element);
+			}
+			
+			this.move = function(){
+				var transform = 'translateX(' + this.x + 'px) translateY(' + this.y + 'px)';
+					this.element.style.MozTransform = transform;
+					this.element.style.WebkitTransform = transform;
+					this.element.style.OTransform = transform;
+			}
+			
+			this.reset();
+			
+		}
+		
+		stage.update = function(){
+			
+			for (var i=0; i < system.allParticles.length; i++) {
+				
+				system.allParticles[i].y += system.allParticles[i].speeX;
+				system.allParticles[i].x += system.allParticles[i].speeY;
+				
+				
+				if( system.allParticles[i].y <  0 || system.allParticles[i].y > stage.height || 
+					system.allParticles[i].x <  0 || system.allParticles[i].x > stage.width){
+					system.allParticles[i].reset();
+				}
+				
+				system.allParticles[i].move();
+				
+			};
+		};
+		
+		
+		var createSystem = function(){
+			
+		}
+		
+		var init = function(){
+			logs.update();
+			
+			
+			stage.root = document.getElementById("stage");
+			
+			system.create("blue");
+			stage.play();
+			
+		}
+		
+		
+		
+		window.onload = init;	
+		</script>
+
+	</head>
+	<body>
+		
+	<div id="stage"></div>
+		
+	</body>
+</html>

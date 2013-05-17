@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <title>Particles</title>
+        <meta name="description" content="" />
+        <meta name="author" content="Minican" />
+        <style>
+        html,body{ width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; }
+        #fps{
+        	position: absolute;
+        	z-index: 300;
+        	font-family: Arial, Helvetica, sans-serif;
+        	font-size: 1em;
+        	margin: 20px;
+        }
+        #stage {
+        	width: 100%;
+        	height: 100%;
+        	overflow: hidden;
+        }
+            #stage div {
+            	display:block;
+                border-radius: 10px;
+            }
+            .alien{
+            	background: url(images/alien.gif) no-repeat;
+            }
+        </style>
+        <script type="text/javascript">
+            // shim layer with setTimeout fallback
+            window.requestAnimFrame = (function () {
+                return window.requestAnimationFrame ||
+                    window.webkitRequestAnimationFrame ||
+                    window.mozRequestAnimationFrame || function (callback) {
+                    window.setTimeout(callback, 1000 / 60);
+                };
+            })();
+
+			var randomColor = function(){
+				return '#' + Math.floor(Math.random() * 16777215).toString(16);
+			} 
+            var randomRange = function (min, max) {
+                return Math.random() * (max - min) + min;
+            }
+            
+            var init = function () {
+                var stage = {
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                    time: 0,
+                    backgroundColor : randomColor(),
+                    create : function(){
+                    	this.element = document.createElement("div");
+                    	this.element.setAttribute("id","stage");
+                        document.body.appendChild(this.element);
+                       this.updateSize();
+                    },
+                    updateSize : function(){
+                    	this.element.style.width = this.width + "px";
+                        this.element.style.height = this.height + "px";
+                        this.element.style.backgroundColor = this.backgroundColor;
+                    }
+                }
+                
+            	window.onresize = function() {
+				   stage.width = window.innerWidth,
+				   stage.height = window.innerHeight;
+				   stage.updateSize();
+				}
+                
+                var Particle = {
+                    x: 0,
+                    y: 0,
+                    width: 5,
+                    height: 5,
+                    scale: 2,
+                    speedX: 5,
+                    speedY: 5,
+                    gravityForce: -.1,
+                    bounce: 0,
+                    allowborder: false,
+                    wind: 0,
+                    time: 0,
+                    color: "blue",
+                    opacity : 1,
+                    rotation : 40,
+                    lifeLength : 10,
+                    create: function (parent) {
+                        this.element = document.createElement("div");
+                        this.element.style.width = this.width + "px";
+                        this.element.style.height = this.height + "px";
+                        this.element.style.backgroundColor = this.color;
+                        parent.appendChild(this.element);
+                        this.move();
+                    },
+                    move: function () {
+
+                        var transform = "translate3d(" + this.x + "px," + this.y + "px, 0px) scale(" + this.scale + ") rotate("+this.rotation+"deg)";
+
+                        this.element.style.WebkitTransform = transform;
+                        this.element.style.MozTransform = transform;
+                        this.element.style.OTransform = transform;
+                        this.element.style.transform = transform;
+                        this.element.style.opacity = this.opacity.toFixed(2);
+
+                        if (this.allowborder) {
+                            this.collisionBorder();
+                        }
+
+                    },
+                    collisionBorder: function () {
+                        if (this.x > stage.width || this.x < 0) {
+                            this.speedX = this.speedX * -1;
+
+                        }
+                        if (this.y > stage.height || this.y < 0) {
+                            this.speedY = this.speedY * -1;
+                        }
+                    }
+                    
+                }
+			
+                    
+                var System = {
+                    numberOfParticles: 40,
+                    x: stage.width / 2,
+                    y: stage.height / 2,
+                    maxSpeed: 2,
+                    maxLife : 2000,
+                    opacityOverLife : true,
+                    rotate : false,
+                    createParticles: function () {
+                    	this.element = document.createElement("div");
+                    	this.element.style.position = "absolute";
+                    	stage.element.appendChild(this.element);
+                    	
+                        this.particlesArray = [];
+                        for (var i = 0; i < this.numberOfParticles; i++) {
+                            var particle = Object.create(Particle);
+                            
+                            this.resetParticleAttributes(particle);
+                            
+                            this.color ? particle.color = this.color : particle.color = "transparent";
+                            
+                            particle.create(this.element);
+                            
+                            if(this.cssClass){
+                            	particle.element.classList.add(this.cssClass);
+                            }
+                            
+                            this.particlesArray.push(particle);
+                            var particle = null;
+                        };
+                    },
+                    resetParticleAttributes : function(particle){
+                    	particle.x = this.x;
+                        particle.y = this.y;
+                        
+                        
+                        this.forceWidth ? particle.width = this.forceWidth : false;
+                        this.forceHeight ? particle.height = this.forceHeight : false;
+                        
+                        particle.speedX = randomRange(-this.maxSpeed, this.maxSpeed);
+                        particle.speedY = randomRange(-this.maxSpeed, this.maxSpeed);
+                   		particle.lifeLength = randomRange(0, this.maxLife);
+                   		particle.opacity = 1;
+                        particle.scale = randomRange(1, 3);
+                    },
+                    update: function () {
+                        for (var i = 0; i < this.particlesArray.length; i++) {
+
+                            var particle = this.particlesArray[i];
+
+                            var angle = Math.atan2(particle.y, particle.x);
+
+                            if (this.mode == "gravity") {
+
+                                particle.speedY += particle.gravityForce;
+
+                                if (particle.y > (stage.height - (particle.scale * particle.height)) || particle.y < 0) {
+                                    if (particle.bounce != 0) {
+                                        particle.speedY *= -particle.bounce;
+                                        particle.time = 0;
+                                    } else {
+                                        particle.y = this.y - (this.y/2);
+                                        particle.speedY = particle.gravityForce;
+                                    }
+                                }
+
+                                particle.y += particle.speedY;
+
+                                if (particle.x >= stage.width - particle.width || particle.x < 0) { //|
+                                    particle.speedX *= -1;
+                                }
+
+                                particle.x += particle.speedX + particle.wind;
+
+                                particle.time++;
+
+                            }
+
+                            if (this.mode == "collision") {
+                                particle.allowborder = true;
+                                //console.log( this.mode)
+                                particle.x += particle.speedX;
+                                particle.y += particle.speedY;
+                            }
+
+                            if (this.mode == "animating") {
+
+								particle.x =Math.floor( (stage.width/4) * Math.cos( stage.time * particle.speedX ) + this.x );
+								particle.y =Math.floor( (stage.height/4)  * Math.sin( stage.time * particle.speedY) + this.y - (stage.height/4) );
+				
+                            }
+                            if(this.rotate){
+                            	particle.rotation > 360 ? particle.rotation = 0 : particle.rotation++;
+                            }
+                            if(particle.lifeLength != 0){
+                            	 particle.lifeLength--;
+                            	 
+	                            if(particle.lifeLength < 0){
+			                		this.resetParticleAttributes(particle);
+			                	}
+			                	
+	                            if(this.opacityOverLife){
+			                		particle.opacity = (particle.lifeLength *.1) / 100;
+	                            }
+                            }
+		                	
+		                	
+                            particle.move();
+                        };
+                    }
+                }
+				
+				//stage.backgroundColor ="black";
+                stage.create();
+      
+                var system = Object.create(System);
+                system.numberOfParticles = 100;
+                system.maxSpeed = 4;
+                system.mode = "gravity";
+                system.color = randomColor();
+                system.createParticles( "getDown" );
+				
+				var filterStrength = 20;
+				var frameTime = 0, lastLoop = new Date, thisLoop;
+
+
+                var updateStage = function () {
+                    requestAnimFrame(updateStage);
+                    system.update();
+                    stage.time += 0.02;
+                    
+                    var thisFrameTime = (thisLoop=new Date) - lastLoop;
+					  frameTime+= (thisFrameTime - frameTime) / filterStrength;
+					  lastLoop = thisLoop;
+                }
+
+                updateStage();
+                
+                // Report the fps only every second, to only lightly affect measurements
+				var fpsOut = document.getElementById('fps');
+				setInterval(function(){
+				  fpsOut.innerHTML = (1000/frameTime).toFixed(1) + " fps / " + system.numberOfParticles +" Particles";
+				},1000);
+            }
+
+            window.onload = init;
+        </script>
+    </head>
+    
+    <body>
+       <div id="fps"></div>
+    </body>
+
+</html>
