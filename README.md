@@ -10,5 +10,7 @@ You can also click the little circle on the bottom right to see the list.
 
 Use the arrows <- and -> to navigate
 
+/!\ The code is a bit dirty for now everything need to be cleaned up /!\
+
 =======
 you can see the test pages here : http://teddyk.be/lab/domparticles/samples/
