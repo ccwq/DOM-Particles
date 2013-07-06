@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <title>Particles</title>
+        <meta name="description" content="" />
+        <meta name="author" content="Minican" />
+        <link rel="stylesheet" href="tools/base.css">
+        <style>
+        </style>
+        <script src="tools/stats.min.js"></script>
+        <script src="tools/tools.js"></script>
+        <script type="text/javascript">
+            var init = function () {
+                initStats();
+                var stage = {
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                    time: 0,
+                    backgroundColor : randomColor(),
+                    create : function(){
+                    	this.element = document.createElement("div");
+                    	this.element.setAttribute("id","stage");
+                        document.body.appendChild(this.element);
+                       this.updateSize();
+                    },
+                    updateSize : function(){
+                    	this.element.style.width = this.width + "px";
+                        this.element.style.height = this.height + "px";
+                        this.element.style.backgroundImage = "url(images/grass.jpg)";
+                        this.element.style.backgroundColor = this.backgroundColor;
+                    }
+                }
+                
+            	window.onresize = function() {
+				   stage.width = window.innerWidth,
+				   stage.height = window.innerHeight;
+				   stage.updateSize();
+				}
+                
+                var Particle = {
+                    x: 0,
+                    y: 0,
+                    width: 50,
+                    height: 50,
+                    scale: 2,
+                    speedX: 5,
+                    speedY: 5,
+                    gravityForce: -.1,
+                    bounce: 0,
+                    allowborder: false,
+                    wind: 0,
+                    time: 0,
+                    color: "blue",
+                    opacity : 1,
+                    rotation : 40,
+                    lifeLength : 10,
+                    create: function (parent) {
+                        this.element = document.createElement("div");
+                        this.element.style.width = this.width + "px";
+                        this.element.style.height = this.height + "px";
+                        //this.element.style.backgroundColor = this.color;
+                        this.element.className = "bubble";
+                        parent.appendChild(this.element);
+                        this.move();
+                    },
+                    move: function () {
+
+                        var transform = "translate3d(" + this.x + "px," + this.y + "px, 0px) scale(" + this.scale + ") rotate("+this.rotation+"deg)";
+
+                        this.element.style.WebkitTransform = transform;
+                        this.element.style.MozTransform = transform;
+                        this.element.style.OTransform = transform;
+                        this.element.style.transform = transform;
+                        this.element.style.opacity = this.opacity.toFixed(2);
+
+                        if (this.allowborder) {
+                            this.collisionBorder();
+                        }
+
+                    },
+                    collisionBorder: function () {
+                        if (this.x > stage.width || this.x < 0) {
+                            this.speedX = this.speedX * -1;
+
+                        }
+                        if (this.y > stage.height || this.y < 0) {
+                            this.speedY = this.speedY * -1;
+                        }
+                    }
+                    
+                }
+                    
+                var System = {
+                    numberOfParticles: 40,
+                    x: stage.width / 2,
+                    y: stage.height / 2,
+                    maxSpeed: 2,
+                    maxLife : 2000,
+                    opacityOverLife : false,
+                    rotate : true,
+                    createParticles: function () {
+                    	this.element = document.createElement("div");
+                    	this.element.style.position = "absolute";
+                    	stage.element.appendChild(this.element);
+                    	
+                        this.particlesArray = [];
+                        for (var i = 0; i < this.numberOfParticles; i++) {
+                            var particle = Object.create(Particle);
+                            
+                            this.resetParticleAttributes(particle);
+                            
+                            this.color ? particle.color = this.color : particle.color = "transparent";
+                            
+                            particle.create(this.element);
+                            this.updateParticleElement(particle);
+
+                            if(this.cssClass){
+                            	particle.element.classList.add(this.cssClass);
+                            }
+                            
+                            this.particlesArray.push(particle);
+                            var particle = null;
+                        };
+                    },
+                    updateParticleElement : function(particle){
+                        particle.element.style.backgroundImage = "url(images/bubble"+Math.round(randomRange(1,5))+".png)";
+                        particle.element.style.width = particle.width;
+                        particle.element.style.height = particle.height; 
+                    },
+                    resetParticleAttributes : function(particle){
+                    	particle.x = Math.round(randomRange(stage.width/2-200, stage.width/2+200));
+                        particle.y = Math.round(randomRange(stage.height/2-200, stage.height/2+200));;
+                        
+                        particle.width = Math.round(randomRange(20, 200));
+                        particle.height = Math.round(randomRange(20, 200));
+
+                        particle.speedX = randomRange(-this.maxSpeed, this.maxSpeed);
+                        particle.speedY = randomRange(-this.maxSpeed, this.maxSpeed);
+                   		particle.lifeLength = randomRange(0, this.maxLife);
+                   		particle.opacity = randomRange(.5, .9);
+                        particle.scale = randomRange(1, 2);
+                    },
+                    update: function () {
+                        for (var i = 0; i < this.particlesArray.length; i++) {
+
+                            var particle = this.particlesArray[i];
+
+                            var angle = Math.atan2(particle.y, particle.x);
+
+                            if (this.mode == "gravity") {
+
+                                particle.speedY += particle.gravityForce;
+
+                                if (particle.y < -100) {
+                                    this.updateParticleElement(particle);
+                                    if (particle.bounce != 0) {
+                                        particle.speedY *= -particle.bounce;
+                                        particle.time = 0;
+                                    } else {
+                                        particle.y = stage.height;
+                                        particle.speedY = particle.gravityForce;
+                                    }
+                                }
+
+                                particle.y += particle.speedY;
+
+                                if (particle.x >= stage.width - particle.width || particle.x < 0) { //|
+                                    particle.speedX *= -1;
+                                }
+
+                                particle.x += particle.speedX + particle.wind;
+
+                                particle.time++;
+
+                            }
+
+                            if (this.mode == "collision") {
+                                particle.allowborder = true;
+                                //console.log( this.mode)
+                                particle.x += particle.speedX;
+                                particle.y += particle.speedY;
+                            }
+
+                            if (this.mode == "animating") {
+
+								particle.x =Math.floor( (stage.width/4) * Math.cos( stage.time * particle.speedX ) + this.x );
+								particle.y =Math.floor( (stage.height/4)  * Math.sin( stage.time * particle.speedY) + this.y - (stage.height/4) );
+				
+                            }
+                            if(this.rotate){
+                            	particle.rotation > 360 ? particle.rotation = 0 : particle.rotation++;
+                            }
+                            /*
+                            if(particle.lifeLength != 0){
+                            	 particle.lifeLength--;
+                            	 
+	                            if(particle.lifeLength < 0){
+			                		this.resetParticleAttributes(particle);
+			                	}
+			                	
+	                            if(this.opacityOverLife){
+			                		particle.opacity = (particle.lifeLength *.1) / 100;
+	                            }
+                            }*/
+		                	
+		                	
+                            particle.move();
+                        };
+                    }
+                }
+				
+				stage.backgroundColor ="black";
+                stage.create();
+      
+                var system = Object.create(System);
+                system.numberOfParticles = 30;
+                system.maxSpeed = 4;
+                system.mode = "gravity";
+                system.createParticles( "getDown" );
+				
+				var filterStrength = 20;
+				var frameTime = 0, lastLoop = new Date, thisLoop;
+
+
+                var updateStage = function () {
+                    stats.begin();
+                    requestAnimFrame(updateStage);
+                    system.update();
+                    stage.time += 0.02;
+                    stats.end();
+                }
+                updateStage();
+            }
+
+            window.onload = init;
+        </script>
+    </head>
+    
+    <body>
+    </body>
+
+</html>

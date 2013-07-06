@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <title>Particles</title>
+        <meta name="description" content="" />
+        <meta name="author" content="Minican" />
+        <link rel="stylesheet" href="tools/base.css">
+        <style>
+        </style>
+        <script src="tools/stats.min.js"></script>
+        <script src="tools/tools.js"></script>
+        <script type="text/javascript">
+            var stage = {
+            fps : 1000/24,
+            time : 0,
+            timeSpeed : .01,
+            backgroundColor : "black",
+            width: window.innerWidth,
+            height: window.innerHeight,
+            updateSize : function(){
+                this.element.style.width = this.width + "px";
+                this.element.style.height = this.height + "px";
+                //stage.element.style.backgroundImage = "url(images/blur4.jpg)";
+                this.element.style.backgroundColor = this.backgroundColor;
+            }
+        }
+
+        window.onresize = function() {
+                   stage.width = window.innerWidth,
+                   stage.height = window.innerHeight;
+                   stage.updateSize();
+                }
+        
+        stage.update = function(){};
+        stage.play = function(){
+            stats.begin();
+              requestAnimFrame( stage.play );
+              stage.update();
+              stats.end();
+        }
+
+        var system = {
+            numberOfParticles : 60,
+            allParticles : [],
+            emiter : [40,40],
+            create : function(cls){
+                for (var i=0; i < system.numberOfParticles; i++) {
+                    var id = i;
+                    var point = new Particle;
+                        point.append(cls);
+                    system.allParticles.push(point);
+                };
+            }
+        }
+        
+        system.center = [stage.width*.5 - system.emiter[0]*.5, stage.height*.5 - system.emiter[1]*.5];
+
+        var Particle = function(){
+            
+            this.id = 0;
+            this.maxSpeed = 12;
+            this.wiggle = 14;
+            this.scale = 4;
+
+            this.reset = function(){
+                this.width = 50;
+                this.height = 50;
+                this.x = randomRange( -system.emiter[0], system.emiter[0]) + system.center[0];
+                //this.y = randomRange( -system.emiter[1], system.emiter[1]) + system.center[1];
+                this.y = (stage.height/5)*4;
+                this.gravity = 4;
+                
+                this.speeX = randomRange(-this.maxSpeed, this.maxSpeed);
+                this.speeY = randomRange(-this.maxSpeed, this.maxSpeed);
+                this.scale = 5;
+                this.rotation = Math.round(randomRange(0, 180));
+
+                var num = randomRange(.5, 1);
+                this.opacity = num.toFixed(2);
+                //this.element.style.webkitAnimationDuration = this.speeY+"s";
+            }
+            
+            this.createElement = function(){
+                this.element = document.createElement("div");
+            }
+            
+            this.append = function(cls){
+                this.createElement();
+                //this.element.style['-webkit-animation-duration']= "2s";
+                this.element.className = cls;
+                stage.element.appendChild(this.element);
+            }
+            
+            this.move = function(){
+
+                this.element.style.top =  Math.round(this.y) + "px";
+                this.element.style.left =  Math.round(this.x) + "px";
+
+                var transform ="rotate(" + this.rotation + "deg) scale(" + this.scale + ")";
+                this.element.style.WebkitTransform = transform;
+                        this.element.style.MozTransform = transform;
+                        this.element.style.OTransform = transform;
+                        this.element.style.transform = transform;
+                /*var transform = 'top(' + Math.round(this.x) + 'px, ' + Math.round(this.y) + 'px)';
+                    this.element.style.MozTransform = transform;
+                    this.element.style.WebkitTransform = transform;
+                    this.element.style.OTransform = transform;
+                */
+            }
+            
+            this.reset();
+            
+        }
+        
+        
+        stage.update = function(){
+            stage.time += stage.timeSpeed;
+            for (var i=0; i < system.allParticles.length; i++) {
+                
+                var elem = system.allParticles[i];
+                
+                //elem.velocity = stage.time * elem.gravity;
+                
+                //var angle = Math.atan2(elem.y,elem.x);
+                //var x =   Math.cos( elem.wiggle ) * elem.speeX;
+                //var y =   Math.sin( elem.wiggle ) * elem.speeY;
+                
+                var x =  2 * Math.cos( stage.time * elem.speeX );
+                var y =  3 * Math.sin( stage.time * elem.speeY ) + elem.gravity;  //  elem.gravity;
+                
+                elem.x += x;
+                elem.y -= y;
+
+                /*if( i == 0){
+                   //console.log( elem.y ); 
+                }*/
+                
+                if( elem.scale > 0){
+                   elem.scale -= .08; 
+                }
+
+                if( elem.y < stage.height/5) {
+                    elem.element.classList.remove("burn");
+                    elem.element.classList.add("burn");
+                    elem.reset();
+                    var animDuration = Math.round(randomRange(3, 8));
+                    elem.element.style['-webkit-animation-duration'] = animDuration+"s";
+                    elem.element.style['-moz-animation-duration'] = animDuration+"s";
+                    elem.element.style['-o-animation-duration'] = animDuration+"s";
+                    elem.element.style['animation-duration'] = animDuration+"s";
+                    elem.element.style.opacity = elem.opacity;
+                    //elem.element.style['-webkit-animation-duration'] = Math.round(Math.abs(elem.speeY))/3+"s";
+                    
+                }
+                
+                elem.move();
+                
+            };
+        };
+        
+        
+        var createSystem = function(){
+            
+        }
+        
+        var init = function(){
+            initStats();
+            stage.element = document.getElementById("stage");
+            stage.updateSize(); 
+            system.create("flame");//blur2
+            stage.play();
+            
+        }
+        
+        
+        
+        window.onload = init;
+        </script>
+    </head>
+    
+    <body>
+<div id="stage"></div>
+    </body>
+
+</html>

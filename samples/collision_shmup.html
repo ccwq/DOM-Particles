@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+		<title>Shmup</title>
+		<meta name="description" content="" />
+		<meta name="author" content="Minican" />
+        <link rel="stylesheet" href="tools/base.css">
+		<style>
+			html, body {
+				margin: 0;
+				padding: 0;
+				font-family: Arial, Helvetica, sans-serif;
+				background: #111111;
+			}
+			#stage {
+				position: absolute;
+				background: #111111;
+			}
+			#stage div{
+				position: absolute;
+			}
+			#player {
+				text-align:center;
+				position: absolute;
+				width: 0px;
+				height: 0px;
+				border-style: solid;
+				border-width: 0 20px 40px 20px;
+				border-color: transparent transparent #ffffff transparent;
+			}
+			#lose{
+				width: 100%;
+				height: 100%;
+				background: black;
+				color: white;
+				visibility: hidden;
+				z-index: 99;
+			}
+			#lose p{
+				line-height: 100%;
+				font-size: 3em;
+				text-align: center;
+			}
+			.bullet{
+				background: white;
+				border-radius: 10px;
+			}
+			.star{
+				border-radius : 100%;
+			}
+			#enemies div{
+				/*border-radius: 10px;*/
+				background-image: url("images/enemy.png");
+				background-repeat: no-repeat;
+			}
+			.e1{ background-position:0 0; }
+			.e2{ background-position:0 -50px; }
+			.e3{ background-position:0 -100px; }
+			.e4{ background-position:-50px 0; }
+			.e5{ background-position:-50px -50px; }
+			.e6{ background-position:-50px -100px; }
+
+
+
+
+		</style>
+
+        <script src="tools/stats.min.js"></script>
+        <script src="tools/tools.js"></script>
+		<script type="text/javascript">
+		var init = function(){
+            initStats();
+			//set Stage
+			var stage = document.getElementById("stage");
+			var stageWidth = window.innerWidth;
+			var stageHeight = window.innerHeight;
+
+				stage.style.width = stageWidth+"px";
+				stage.style.height = stageHeight+"px";
+				
+			window.onresize = function() {
+				stageWidth = window.innerWidth;
+				stageHeight = window.innerHeight;
+				stage.style.width = stageWidth+"px";
+				stage.style.height = stageHeight+"px"
+				}
+			
+			//GAMES PARAMS
+			var gameOver = false;
+			var score = 0;
+			var shootTime = 0;
+			var shootTimeout = 30;
+			var shootAllow = true;
+			var shoots = 0;
+			
+			var enemyTime = 0;
+			var enemyTimeout = 30;
+			var enemyId = 0;
+			var enemyTypes = ["e1","e2","e3","e4","e5","e6"];
+			
+			//set commands
+			var leftIsDown = false;
+			var upIsDown = false;
+			var rightIsDown = false;
+			var downIsDown = false
+			
+			//set the speed of movement
+			var mainSpeed = 5;
+			
+			var bulletStack = [];
+			var enemyStack = [];
+			
+			
+			var checkShootAllowance = function(){
+				if(shootTime < shootTimeout){
+					shootTime++;
+				}else{
+					shootAllow = true;
+					shootTime = 0;
+				}
+			}
+			
+			var hitTest = function(object,targets){
+				var collision = false;
+				for (var i=0; i < targets.length; i++) {
+				
+					if( object.x > targets[i].x && 
+						object.x < targets[i].x + targets[i].width &&
+						object.y > targets[i].y &&
+						object.y < targets[i].y + targets[i].height){
+						
+						collision = true;
+					}
+				};
+				
+				return collision;
+			}
+			
+			//set Player
+			var Player = {
+				width 	: 40,
+				height 	: 40,
+				x 		: 0,
+				y 		: 0,
+				createElement : function(id){
+					this.element = document.createElement("div");
+					this.element.setAttribute("id", id);
+					this.element.style.opacity = 0;
+					stage.appendChild(this.element);
+				},
+				resetPos: function(){
+					this.x = stageWidth*.5 - this.width*.5;
+					this.y = stageHeight+300;// - this.height;
+					
+				},
+				move	: function(){
+					var transform = 'translate3d(' + (Math.floor(this.x) ) + 'px, ' + (Math.floor(this.y) ) + 'px,0)';
+					this.element.style.MozTransform = transform;
+					this.element.style.WebkitTransform = transform;
+					this.element.style.OTransform = transform;
+				}
+			}
+			
+			//set bullet
+			var Bullet = {
+				width : 5,
+				height : 30,
+				x : 0,
+				y : 0,
+				speed : 10,
+				create : function(){
+					this.element = document.createElement("div");
+					this.element.className ="bullet";
+					this.element.style.width = this.width+"px";
+					this.element.style.height = this.height+"px";
+					this.element.style.background = "white";
+					bulletContainer.appendChild(this.element);
+					this.move();
+				},
+				move : function(){
+					this.y -= this.speed;
+					
+					var transform = 'translate3d(' + (Math.floor(this.x) ) + 'px, ' + (Math.floor(this.y) ) + 'px, 0)';
+					this.element.style.MozTransform = transform;
+					this.element.style.WebkitTransform = transform;
+					this.element.style.OTransform = transform;
+					
+					if(this.y < -1 ){
+						//Remove this bullet
+						this.remove(this.id);
+					}
+				},
+				remove : function(id){
+					for(var i=0; i<bulletStack.length; i++){
+				        if(bulletStack[i].id == id){
+				        	bulletContainer.removeChild(bulletStack[i].element);
+				        	//removes 1 element at position i 
+				            bulletStack.splice(i, 1); 
+				            break;
+				        }
+				    }
+				}
+			}
+			//Enemy
+			var Enemy = {
+				width : 50,
+				height : 50,
+				x : 0,
+				y : 0,
+				speed : 1,
+				create : function(){
+					//this.type = randomColor();
+					this.type = enemyTypes[Math.round(randomRange(0, enemyTypes.length))];
+					this.element = document.createElement("div");
+					this.element.className ="enemy "+ this.type;
+					this.element.style.width = this.width+"px";
+					this.element.style.height = this.height+"px";
+					//this.element.style["-webkit-filter"] = "hue-rotate(180deg)";
+					//this.element.style.background = this.type;
+					enemiesContainer.appendChild(this.element);
+					this.move();
+				},
+				move : function(){
+					this.y += this.speed;
+					
+					var transform = 'translate3d(' + (Math.floor(this.x) ) + 'px,' + (Math.floor(this.y) ) + 'px, 0)';
+					this.element.style.MozTransform = transform;
+					this.element.style.WebkitTransform = transform;
+					this.element.style.OTransform = transform;
+					
+					if(this.y > stageHeight ){
+						//console.log("remove");
+						//Remove this bullet
+						this.remove(this.id);
+					}
+					if( this.hitTest() ){
+						score += 5;
+						this.remove(this.id, this.hitTest() );
+						
+						console.log(this.type, "destroyed", score, this.hitTest());
+					}
+				},
+				remove : function(id, targetId){
+					for(var i=0; i<enemyStack.length; i++){
+				        if(enemyStack[i].id == id){
+				        	enemiesContainer.removeChild(enemyStack[i].element);
+				            enemyStack.splice(i, 1); 
+				            break;
+				        }
+				    }
+				    for(var i=0; i<bulletStack.length; i++){
+				        if(bulletStack[i].id == targetId){
+				        	bulletContainer.removeChild(bulletStack[i].element);
+				            bulletStack.splice(i, 1); 
+				            break;
+				        }
+				    }
+				},
+				hitTest : function(){
+					var targets = bulletStack;
+					var collision = false;
+					for (var i=0; i < targets.length; i++) {
+					
+						if( targets[i].x > this.x && 
+							targets[i].x < this.x + this.width &&
+							targets[i].y > this.y &&
+							targets[i].y < this.y + this.height){
+							
+							collision = targets[i].id;
+						}
+					};
+					
+					return collision;
+				}
+			}
+			//set Player
+			var Star = {
+				x : 0,
+				y : 0,
+				size : 4,
+				speed : 3,
+				createElement : function(){
+					this.element = document.createElement("div");
+					this.element.className = "star";
+					this.reset();
+					starContainer.appendChild(this.element);
+					
+					this.move();
+				},
+				reset : function(){
+					this.speed = randomRange(1, 4);
+					this.size = randomRange(1,5);
+					this.element.style.width = this.size +"px";
+					this.element.style.height = this.size +"px"; 
+					this.element.style.background = starsColors[Math.round(randomRange(0, starsColors.length))];
+					this.x = randomRange(0,stageWidth-this.size);
+					this.y = randomRange(0,stageHeight/3);
+				},
+				move : function(){
+					
+					this.y += this.speed;
+					var transform = 'translateX(' + (Math.floor(this.x) ) + 'px) translateY(' + (Math.floor(this.y) ) + 'px)';
+					this.element.style.MozTransform = transform;
+					this.element.style.WebkitTransform = transform;
+					this.element.style.OTransform = transform;
+					
+					if(this.y > stageHeight - this.size ){
+						this.reset();
+					}
+					
+				}
+			}
+			
+			//STAR CONTAINER
+			var starContainer = document.createElement("div");
+				starContainer.setAttribute("id","stars");
+				stage.appendChild(starContainer);
+				
+			//CREATE PLAYER
+			var player = Object.create(Player);
+				player.createElement("player");
+				player.resetPos();
+					
+			//ENEMIES CONTAINER
+			var enemiesContainer = document.createElement("div");
+				enemiesContainer.setAttribute("id","enemies");
+				stage.appendChild(enemiesContainer);
+				
+			//BULLET CONTAINER
+			var bulletContainer = document.createElement("div");
+				bulletContainer.setAttribute("id","bullets");
+				stage.appendChild(bulletContainer);	
+				
+			
+				
+			var createEnemies = function(){
+				if(enemyTime < enemyTimeout){
+					enemyTime++;
+				}else{
+					enemyTime = 0;
+					var enemy = Object.create(Enemy);
+						enemy.x = Math.random()* (stageWidth - enemy.width);
+						enemy.y = -100;
+						enemy.id = enemyId;
+						//enemy.type = enemyTypes[]randomRange(0, starsColors.length)
+						enemy.create();
+					enemyStack.push(enemy);
+					enemyId++;
+				}
+			}
+			
+			var keyDown = function(e){
+				
+player.element.style.opacity = 1;
+				if(e.keyCode == 37 || e.keyCode == 65){
+					leftIsDown = true;
+				}
+				if(e.keyCode == 38 || e.keyCode == 87){
+					upIsDown = true;
+				}
+				if(e.keyCode == 39 || e.keyCode == 68){
+					rightIsDown = true;
+				}
+				if(e.keyCode == 40|| e.keyCode == 83){
+					downIsDown = true;
+				}
+				
+				//shoot
+				if(e.keyCode == 32 && shootAllow){
+					//shootAllow = false;
+					var bullet = Object.create(Bullet);
+						bullet.x = player.x + player.width/2 - bullet.width;
+						bullet.y = player.y;
+						bullet.id = shoots;
+						bullet.create();
+						
+					bulletStack.push(bullet);
+					shoots++;
+				}
+			}
+			
+			var keyUp = function(e){
+				if(e.keyCode == 37 || e.keyCode == 65){
+					leftIsDown = false;
+				}
+				if(e.keyCode == 38 || e.keyCode == 87){
+					upIsDown = false;
+				}
+				if(e.keyCode == 39 || e.keyCode == 68){
+					rightIsDown = false;
+				}
+				if(e.keyCode == 40|| e.keyCode == 83){
+					downIsDown = false;
+				}
+			}
+			
+			//make the player move
+			var movePlayer = function(){
+				
+				if(leftIsDown){ player.x -= mainSpeed; }
+				if(upIsDown){ player.y -= mainSpeed; }
+				if(rightIsDown){ player.x += mainSpeed; }
+				if(downIsDown){ player.y += mainSpeed; }
+				
+				//collision to the border
+				if(player.x <= 0){ player.x += mainSpeed; }
+				if(player.y <= 0){ player.y += mainSpeed; }
+				if(player.x >= stageWidth-player.width){ player.x -= mainSpeed; }
+				if(player.y >= stageHeight+100){ player.y -= mainSpeed; }
+				//if(player.y >= stageHeight-player.height){ player.y -= mainSpeed; }
+
+				player.move();
+				/*if(hitTest(player, enemyStack) ){
+					gameOver = true;
+					var scoreDisplay = document.getElementById("scoreDisplay");
+					var lose = document.getElementById("lose");
+					
+					scoreDisplay.innerText = score;
+					lose.style.visibility = "visible";
+					
+				}*/
+			}
+			
+			
+			var starsStack = [];
+			var starsNum = 0;
+			var starsMax = 60;
+			var starsColors = ["DimGrey","gray","LightGray ","Snow","White"];
+			var createStarField = function(){
+				//seed stars randomly
+				if(Math.random()*10 < 2 && starsNum < starsMax){
+					var star = Object.create(Star);
+						star.createElement();
+					starsStack.push(star);
+					starsNum++;
+				}
+			}
+			
+			//EVENTS
+			window.addEventListener("keydown", keyDown, false);
+			window.addEventListener("keyup", keyUp, false);
+			
+			var update = function () {
+                stats.begin();
+				if(!gameOver){
+					movePlayer();
+					createEnemies();
+					createStarField();
+					//checkShootAllowance();
+					//update bullets
+					for (var i=0; i < bulletStack.length; i++) {
+					  bulletStack[i].move();
+					};
+					//update enemies
+					for (var i=0; i < enemyStack.length; i++) {
+					  enemyStack[i].move();
+					};
+					//update enemies
+					for (var i=0; i < starsStack.length; i++) {
+					  starsStack[i].move();
+					};
+				}
+                stats.end();
+			}
+			
+			var enterFrame = function (){
+				requestAnimFrame(enterFrame);
+				update();
+			}
+			
+			enterFrame();
+		}	
+		
+		
+		window.onload = init;
+		</script>
+
+	</head>
+	<body>
+		<!-- source : http://stackoverflow.com/questions/5629914/how-to-delete-an-item-from-array-of-objects -->
+		<div id="stage">
+			<!--<div id="lose">
+				<p>You lose</p>
+				<p>Score : <span id="scoreDisplay">0</span></p>
+			</div>-->
+		</div>
+
+	</body>
+</html>

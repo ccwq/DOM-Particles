@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <title>Particles</title>
+        <meta name="description" content="" />
+        <meta name="author" content="Minican" />
+        <link rel="stylesheet" href="tools/base.css">
+        <style>
+        </style>
+        <script src="tools/stats.min.js"></script>
+        <script src="tools/tools.js"></script>
+        <script type="text/javascript">
+            var init = function () {
+                initStats();
+                var stage = {
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                    time: 0,
+                    backgroundColor : "#2B0007",//#450F9B",//randomColor(),
+                    create : function(){
+                    	this.element = document.createElement("div");
+                    	this.element.setAttribute("id","stage");
+                        document.body.appendChild(this.element);
+                       this.updateSize();
+                    },
+                    updateSize : function(){
+                    	this.element.style.width = this.width + "px";
+                        this.element.style.height = this.height + "px";
+                        this.element.style.backgroundColor = this.backgroundColor;
+                    }
+                }
+                
+            	window.onresize = function() {
+				   stage.width = window.innerWidth;
+				   stage.height = window.innerHeight;
+				   stage.updateSize();
+				}
+                
+                var Particle = {
+                    x: 0,
+                    y: 0,
+                    width: 100,
+                    height: 100,
+                    scale: 2,
+                    speedX: 5,
+                    speedY: 5,
+                    gravityForce: .4,
+                    bounce: 0,
+                    allowborder: false,
+                    wind: 0,
+                    time: 0,
+                    color: "blue",
+                    opacity : 1,
+                    rotation : 0,
+                    lifeLength : 10,
+                    create: function (parent) {
+                        this.element = document.createElement("div");
+                        this.element.style.width = this.width + "px";
+                        this.element.style.height = this.height + "px";
+                         this.element.style.border = "1px solid black";
+                        this.element.style.backgroundColor = this.color;
+                        this.element.className = "rounded";//
+
+                        parent.appendChild(this.element);
+                        this.move();
+                    },
+                    move: function () {
+
+                        this.element.style.top =  Math.round(this.y) + "px";
+                this.element.style.left =  Math.round(this.x) + "px";
+
+                var transform ="rotate(" + this.rotation + "deg) scale(" + this.scale + ")";
+                this.element.style.WebkitTransform = transform;
+                        this.element.style.MozTransform = transform;
+                        this.element.style.OTransform = transform;
+                        this.element.style.transform = transform;
+                        this.element.style.opacity = this.opacity;
+
+                        if (this.allowborder) {
+                            this.collisionBorder();
+                        }
+
+                    },
+                    collisionBorder: function () {
+                        if (this.x > stage.width || this.x < 0) {
+                            this.speedX = this.speedX * -1;
+
+                        }
+                        if (this.y > stage.height || this.y < 0) {
+                            this.speedY = this.speedY * -1;
+                        }
+                    },
+                    randomMove: function() {
+                        var time = 3000;
+                        var me = this;
+                        setInterval(function(){
+                            me.element.classList.remove("transitions3")
+                            me.element.classList.add("transitions3");
+                            me.scale = Math.round(randomRange(.1, 1));
+                            me.opacity = Math.round(randomRange(.1, 1));
+
+                            //me.element.style.zIndex = Math.round(randomRange(0, 100));
+                            //me.x = randomRange(20, stage.width-20);
+                            
+                            //me.y = randomRange(20, stage.height-20);
+                            me.move();
+                        },randomRange(300, 1000));
+                    }
+                }
+			
+                    
+                var System = {
+                    numberOfParticles: 40,
+                    x: stage.width / 2,
+                    y: stage.height / 2,
+                    maxSpeed: 2,
+                    maxLife : 2000,
+                    opacityOverLife : true,
+                    rotate : false,
+                    createParticles: function () {
+                    	this.element = document.createElement("div");
+                    	this.element.style.position = "absolute";
+                    	stage.element.appendChild(this.element);
+                    	
+                        this.particlesArray = [];
+                        for (var i = 0; i < this.numberOfParticles; i++) {
+                            var particle = Object.create(Particle);
+                            
+                            this.resetParticleAttributes(particle);
+                            particle.scale = i/this.numberOfParticles; //randomRange(1, 3);
+                            particle.color = randomColor();
+                            
+                            particle.create(this.element);
+                            
+                            if(this.cssClass){
+                            	particle.element.classList.add(this.cssClass);
+                            }
+                            particle.randomMove();
+                            
+                            this.particlesArray.push(particle);
+                            var particle = null;
+                        };
+                    },
+                    resetParticleAttributes : function(particle){
+                    	particle.x = randomRange(20, stage.width-20);
+                        particle.y = randomRange(20, stage.height-20);
+                        
+                        this.forceWidth ? particle.width = this.forceWidth : false;
+                        this.forceHeight ? particle.height = this.forceHeight : false;
+                        
+                        particle.speedX = randomRange(-this.maxSpeed, this.maxSpeed);
+                        particle.speedY = randomRange(-this.maxSpeed, this.maxSpeed);
+                   		particle.lifeLength = randomRange(0, this.maxLife);
+                   		particle.opacity = randomRange(.3, 1);
+                        particle.rotation = randomRange(0, 360);
+                        
+                        
+                    }
+                }
+				
+				//stage.backgroundColor ="black";
+                stage.create();
+                /*
+                var systemOne = Object.create(System);
+                systemOne.numberOfParticles = 33;
+                systemOne.mode = "collision";
+                
+                systemOne.cssClass = "alien";
+                systemOne.forceWidth = 30;
+                systemOne.forceHeight = 30;
+                systemOne.createParticles( "alienAttack" );
+/**/
+                var systemTwo = Object.create(System);
+                systemTwo.numberOfParticles = 200;
+                systemTwo.mode = "animating";
+                systemTwo.color = "#28EBF8";//randomColor();
+                systemTwo.createParticles( "tornado" );
+                 /*       
+                var systemThree = Object.create(System);
+                systemThree.numberOfParticles = 34;
+                systemThree.maxSpeed = 10;
+                systemThree.mode = "gravity";
+                systemThree.color = randomColor();
+                systemThree.createParticles( "getDown" );
+				*/
+                var updateStage = function () {
+                    stats.begin();
+                    requestAnimFrame(updateStage);
+                    systemTwo.update();
+                   /* systemTwo.update();
+                    systemThree.update();*/
+                    //stage.time += 0.02;
+
+                    stats.end();
+                }
+
+                //updateStage();
+
+            }
+
+            window.onload = init;
+        </script>
+    </head>
+    
+    <body>
+    </body>
+
+</html>
