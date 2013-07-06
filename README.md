@@ -8,3 +8,6 @@ or launch the index.html and push N to see the next particle system and P to go 
 You can also push the little circle ob the bottom right to see the list.
 
 Use the arrows <- and -> to navigate
+
+=======
+you can see the test pages here : http://teddyk.be/lab/domparticles/
