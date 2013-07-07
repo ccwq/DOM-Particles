@@ -4,9 +4,9 @@ Create a DOM particle system
 
 See the slides
 =============
-on gitHub : http://e8b222b.5minfork.com/
+on gitHub : http://5minfork.com/teddy-tdk/DOM-Particles
 
-on my website : http://teddyk.be/lab/domparticles/
+on my website : http://teddyk.be/lab/domparticles
 
 How to use
 =============

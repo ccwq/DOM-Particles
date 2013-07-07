@@ -85,9 +85,9 @@ $(document).ready(function() {
     document.getElementById("iframe").style.overflow = "hidden";
 
     var height = samples.height()+10;
-                 samples.css('bottom',-height+"px");
+                 //samples.css('bottom',-height+"px");
 
-    var hidden = true;
+    var hidden = false;
 
      $("#show").click(function(){
         if(hidden){
