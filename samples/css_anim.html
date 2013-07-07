@@ -150,53 +150,25 @@
                    		particle.lifeLength = randomRange(0, this.maxLife);
                    		particle.scale = randomRange(.2, .5);
                         particle.rotation = randomRange(0, 360);
-                        
-                        
                     }
                 }
 				
-				//stage.backgroundColor ="black";
                 stage.create();
-                /*
-                var systemOne = Object.create(System);
-                systemOne.numberOfParticles = 33;
-                systemOne.mode = "collision";
-                
-                systemOne.cssClass = "alien";
-                systemOne.forceWidth = 30;
-                systemOne.forceHeight = 30;
-                systemOne.createParticles( "alienAttack" );
-/**/
                 var systemTwo = Object.create(System);
                 systemTwo.numberOfParticles = 100;
                 systemTwo.mode = "animating";
                 //systemTwo.color = "#28EBF8";//randomColor();
                 systemTwo.createParticles( "tornado" );
-                 /*       
-                var systemThree = Object.create(System);
-                systemThree.numberOfParticles = 34;
-                systemThree.maxSpeed = 10;
-                systemThree.mode = "gravity";
-                systemThree.color = randomColor();
-                systemThree.createParticles( "getDown" );
-				*/
-                var updateStage = function () {
-                    stats.begin();
-                    requestAnimFrame(updateStage);
-                    systemTwo.update();
-                   /* systemTwo.update();
-                    systemThree.update();*/
-                    //stage.time += 0.02;
-
-                    stats.end();
-                }
-
-                //updateStage();
-
             }
 
             window.onload = init;
         </script>
+        <script>
+            var _gaq=[['_setAccount','UA-20600352-1'],['_trackPageview']];
+            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+            g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+            s.parentNode.insertBefore(g,s)}(document,'script'));
+        </script> 
     </head>
     
     <body>

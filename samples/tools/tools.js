@@ -103,12 +103,14 @@ var translate = function (obj) {
     obj.element.style.OTransform = transform;
     obj.element.style.transform = transform;
 }
+
 var alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
+
 var randomLetter = function(){
   return alphabet[Math.round(randomRange(0,25))];
 }
-var setBorder = function(a,b,c){
-    obj.element.style.border = a+" "+b+" "+b;
+var setBorder = function(a,b,color){
+    obj.element.style.border = a+" "+b+" "+color;
 }
 var setOpacity = function(p){
     obj.element.style.opacity = p;

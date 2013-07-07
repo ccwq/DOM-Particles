@@ -167,14 +167,6 @@
 
                     },
                     collisionBorder: function (particle) {
-                       /* if (particle.x > stage.width-particle.width || particle.x < 0) {
-                            //particle.speedX = particle.speedX * -1;
-                            this.resetParticleAttributes(particle);
-                        }
-                        if (particle.y > stage.height || particle.y < 0) {
-                            //particle.speedY = particle.speedY * -1;
-                            this.resetParticleAttributes(particle);
-                        }*/
                         if (particle.z > 0) {
                             //particle.speedY = particle.speedY * -1;
                             this.resetParticleAttributes(particle);
@@ -186,51 +178,8 @@
 
                             var particle = this.particlesArray[i];
 
-                            //var angle = Math.atan2(particle.y, particle.x);
-                            /*
-                            if (this.mode == "gravity") {
-
-                                particle.speedY += particle.gravityForce;
-
-                                if (particle.y > (stage.height - (particle.scale * particle.height)) || particle.y < 0) {
-                                    if (particle.bounce != 0) {
-                                        particle.speedY *= -particle.bounce;
-                                        particle.time = 0;
-                                    } else {
-                                        particle.y = this.y - (this.y/2);
-                                        particle.speedY = particle.gravityForce;
-                                    }
-                                }
-
-                                particle.y += particle.speedY;
-
-                                if (particle.x >= stage.width - particle.width || particle.x < 0) { //|
-                                    particle.speedX *= -1;
-                                }
-
-                                particle.x += particle.speedX + particle.wind;
-
-                                particle.time++;
-
-                            }*/
-
-                            //if (this.mode == "collision") {
                                 this.collisionBorder(particle);
-                                //console.log( this.mode)
-                                //particle.x += particle.speedX;
                                 particle.z += particle.speedZ;
-                                //particle.y += particle.speedY;
-                            //}
-                            /*
-                            if (this.mode == "animating") {
-
-								particle.x =Math.floor( (stage.width/4) * Math.cos( stage.time * particle.speedX ) + this.x );
-								particle.y =Math.floor( (stage.height/4)  * Math.sin( stage.time * particle.speedY) + this.y - (stage.height/4) );
-				
-                            }
-                            if(this.rotate){
-                            	particle.rotation > 360 ? particle.rotation = 0 : particle.rotation++;
-                            }*/
 		                	
                             this.move(particle);
 
@@ -264,6 +213,12 @@
 
             window.onload = init;
         </script>
+        <script>
+            var _gaq=[['_setAccount','UA-20600352-1'],['_trackPageview']];
+            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+            g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+            s.parentNode.insertBefore(g,s)}(document,'script'));
+        </script> 
     </head>
     
     <body>

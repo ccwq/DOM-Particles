@@ -148,12 +148,11 @@
 				createElement : function(id){
 					this.element = document.createElement("div");
 					this.element.setAttribute("id", id);
-					this.element.style.opacity = 0;
 					stage.appendChild(this.element);
 				},
 				resetPos: function(){
 					this.x = stageWidth*.5 - this.width*.5;
-					this.y = stageHeight+300;// - this.height;
+					this.y = stageHeight - this.height;
 					
 				},
 				move	: function(){
@@ -353,8 +352,7 @@
 			}
 			
 			var keyDown = function(e){
-				
-player.element.style.opacity = 1;
+
 				if(e.keyCode == 37 || e.keyCode == 65){
 					leftIsDown = true;
 				}
@@ -410,18 +408,9 @@ player.element.style.opacity = 1;
 				if(player.y <= 0){ player.y += mainSpeed; }
 				if(player.x >= stageWidth-player.width){ player.x -= mainSpeed; }
 				if(player.y >= stageHeight+100){ player.y -= mainSpeed; }
-				//if(player.y >= stageHeight-player.height){ player.y -= mainSpeed; }
+				if(player.y >= stageHeight-player.height){ player.y -= mainSpeed; }
 
 				player.move();
-				/*if(hitTest(player, enemyStack) ){
-					gameOver = true;
-					var scoreDisplay = document.getElementById("scoreDisplay");
-					var lose = document.getElementById("lose");
-					
-					scoreDisplay.innerText = score;
-					lose.style.visibility = "visible";
-					
-				}*/
 			}
 			
 			
@@ -477,15 +466,17 @@ player.element.style.opacity = 1;
 		
 		window.onload = init;
 		</script>
+		<script>
+            var _gaq=[['_setAccount','UA-20600352-1'],['_trackPageview']];
+            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+            g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+            s.parentNode.insertBefore(g,s)}(document,'script'));
+        </script> 
 
 	</head>
 	<body>
 		<!-- source : http://stackoverflow.com/questions/5629914/how-to-delete-an-item-from-array-of-objects -->
 		<div id="stage">
-			<!--<div id="lose">
-				<p>You lose</p>
-				<p>Score : <span id="scoreDisplay">0</span></p>
-			</div>-->
 		</div>
 
 	</body>

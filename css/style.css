@@ -47,10 +47,10 @@ html, body{
     background: #817B46;
     z-index: 101;
     border-radius: 10px;
-    opacity: .2;
+    opacity: 1;
 }
 #show:hover{
-   opacity: .6; 
+   opacity: 1; 
 }
 #samples {
 position: absolute;
