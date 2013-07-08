@@ -4,7 +4,7 @@ Create a DOM particle system
 
 See the slides
 =============
-on gitHub : http://5minfork.com/teddy-tdk/DOM-Particles
+on gitHub : http://5minfork.com/teddy-tdk/DOM-Particles (you can only see the slides)
 
 on my website : http://teddyk.be/lab/domparticles
 
